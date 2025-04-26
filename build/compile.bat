@@ -121,16 +121,35 @@ echo.
 echo Starting time was: %STARTTIME%
 echo Ending time is   : %ENDTIME%
 
-rem convert STARTTIME and ENDTIME to miliseconds
-rem The format of %TIME% is HH:MM:SS,CS for example 23:59:59,99
-set /A STARTTIME=(1%STARTTIME:~0,2%-100)*3600000 + (1%STARTTIME:~3,2%-100)*60000 + (1%STARTTIME:~6,2%-100)*1000 + (1%STARTTIME:~9,2%-100)*10
-set /A ENDTIME=(1%ENDTIME:~0,2%-100)*3600000 + (1%ENDTIME:~3,2%-100)*60000 + (1%ENDTIME:~6,2%-100)*1000 + (1%ENDTIME:~9,2%-100)*10
+rem Parse STARTTIME using delimiters
+for /f "tokens=1-4 delims=:," %%a in ("%STARTTIME%") do (
+    set START_HH=%%a
+    set START_MM=%%b
+    set START_SS=%%c
+    set START_CS=%%d
+)
+rem Remove potential leading space from hour
+set START_HH=%START_HH: =%
+
+rem Parse ENDTIME using delimiters
+for /f "tokens=1-4 delims=:," %%a in ("%ENDTIME%") do (
+    set END_HH=%%a
+    set END_MM=%%b
+    set END_SS=%%c
+    set END_CS=%%d
+)
+rem Remove potential leading space from hour
+set END_HH=%END_HH: =%
+
+rem Convert STARTTIME and ENDTIME to milliseconds using parsed values
+set /A STARTTIME=(%START_HH%*3600000) + (%START_MM%*60000) + (%START_SS%*1000) + (%START_CS%*10)
+set /A ENDTIME=(%END_HH%*3600000) + (%END_MM%*60000) + (%END_SS%*1000) + (%END_CS%*10)
 
 rem calculating the duration is easy
 set /A DURATION=%ENDTIME%-%STARTTIME%
 
 rem we might have measured the time inbetween days
-if %ENDTIME% LSS %STARTTIME% set set /A DURATION=%STARTTIME%-%ENDTIME%
+if %ENDTIME% LSS %STARTTIME% set /A DURATION=%STARTTIME%-%ENDTIME%
 
 set /A DURATION=%DURATION%/1000
 
